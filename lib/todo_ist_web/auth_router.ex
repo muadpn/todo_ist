@@ -3,6 +3,6 @@ defmodule TodoIstWeb.AuthRouter do
 
   scope "/", TodoIstWeb do
     post "/login", LoginController, :login
-    post "sign-up", LoginController, :signup
+    post "/sign-up", LoginController, :signup
   end
 end

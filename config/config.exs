@@ -11,6 +11,10 @@ config :todo_ist,
   ecto_repos: [TodoIst.Repo],
   generators: [timestamp_type: :utc_datetime]
 
+config :todo_ist, TodoIst.Guardian,
+  issuer: "todo_ist",
+  secret_key: "j3VV9xO//OVdNdyw99CJSC4sjqMeA5iiDhZ6KeEnhvbBz/vsmFoCe7/GPcXZry6n"
+
 # Configures the endpoint
 config :todo_ist, TodoIstWeb.Endpoint,
   url: [host: "localhost"],
