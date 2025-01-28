@@ -1,6 +1,8 @@
 defmodule TodoIstWeb.Router do
   use TodoIstWeb, :router
-
+  alias TodoIst.Authentication
+  alias RouteHandlers.{AuthRouter, TodoRoute, UserRouter}
+  # alias
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -12,7 +14,13 @@ defmodule TodoIstWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug :fetch_session
     plug CORSPlug, origin: ["http://localhost:3000"]
+  end
+
+  pipeline :auth do
+    plug :api
+    plug Authentication.Pipeline
   end
 
   scope "/", TodoIstWeb do
@@ -23,9 +31,13 @@ defmodule TodoIstWeb.Router do
   # Other scopes may use custom stacks.
   scope "/api", TodoIstWeb do
     pipe_through :api
-
     forward "/auth", AuthRouter
-    forward "/todo", TodoRouter
+  end
+
+  scope "/api", TodoIstWeb do
+    pipe_through :auth
+    forward "/todo", TodoRoute
+    forward "/user", UserRouter
   end
 
   # Enable Swoosh mailbox preview in development

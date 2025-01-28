@@ -12,7 +12,7 @@ defmodule TodoIst.Relationship do
 
     belongs_to :user, TodoIst.User, type: :binary_id
 
-    timestamps(type: :utc_datetime, inserted_at: :inserted_at)
+    timestamps(type: :utc_datetime)
   end
 
   def changeset(relationship, attrs) do
@@ -23,8 +23,7 @@ defmodule TodoIst.Relationship do
       :subject_table,
       :predicate,
       :object_id,
-      :object_table,
-      :user_id
+      :object_table
     ])
   end
 end
