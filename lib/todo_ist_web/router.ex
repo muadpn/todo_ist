@@ -12,6 +12,7 @@ defmodule TodoIstWeb.Router do
     plug :put_secure_browser_headers
   end
 
+  
   pipeline :api do
     plug :accepts, ["json"]
     plug :fetch_session
@@ -37,7 +38,7 @@ defmodule TodoIstWeb.Router do
   scope "/api", TodoIstWeb do
     pipe_through :auth
     forward "/todo", TodoRoute
-    forward "/user", UserRouter
+    forward "/users", UserRouter
   end
 
   # Enable Swoosh mailbox preview in development
