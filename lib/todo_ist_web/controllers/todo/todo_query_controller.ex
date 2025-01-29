@@ -27,7 +27,6 @@ defmodule TodoIstWeb.Todo.TodoQueryController do
         # end)
 
         res = aggregate_results(data)
-        Logger.info("AGG: #{inspect(res)}")
 
         json(conn, %{success: res})
 
