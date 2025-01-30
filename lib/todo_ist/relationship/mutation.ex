@@ -1,7 +1,6 @@
 defmodule TodoIst.Relationship.Mutation do
   alias TodoIst.Relationship
   alias TodoIst.Repo
-  import Ecto.Query
   import Ecto.UUID
 
   # @relationship [:sent_friend_request]

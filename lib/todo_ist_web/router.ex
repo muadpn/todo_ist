@@ -1,8 +1,7 @@
 defmodule TodoIstWeb.Router do
   use TodoIstWeb, :router
   alias TodoIstWeb.AuthPlug
-  alias TodoIst.Authentication
-  alias RouteHandlers.{AuthRouter, TodoRoute, UserRouter}
+  alias RouteHandlers.{AuthRouter, TodoRoute, UserRouter, MessageRouter}
   # alias
   pipeline :browser do
     plug :accepts, ["html"]
@@ -12,7 +11,6 @@ defmodule TodoIstWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
   end
-
 
   pipeline :api do
     plug :accepts, ["json"]
@@ -40,6 +38,7 @@ defmodule TodoIstWeb.Router do
     pipe_through :auth
     forward "/todo", TodoRoute
     forward "/users", UserRouter
+    forward "/messages", MessageRouter
   end
 
   # Enable Swoosh mailbox preview in development

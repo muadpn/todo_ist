@@ -1,13 +1,15 @@
 defmodule TodoIstWeb.UserChannel do
-  alias TodoIstWeb.Broadcasts.User
+  alias TodoIst.Repo
+  alias TodoIst.Messages.ChatMessage
+  alias TodoIstWeb.Broadcasts.BroadcastUser
+  alias TodoIst.Messages.ChatMessage, as: ChatSchema
+  alias TodoIstWeb.Broadcasts.User.Message
   alias TodoIstWeb.Endpoint
   alias Phoenix.Socket.Broadcast
   alias Phoenix.Socket.Message
-  use Phoenix.Channel
-
-  Phoenix.Presence
-  # alias TodoIstWeb.Presence
   require Logger
+  use Phoenix.Channel
+  Phoenix.Presence
 
   def join("user:" <> user_id, _params, socket) do
     Logger.info("CONNECTED TO USER!!!!")
@@ -30,8 +32,49 @@ defmodule TodoIstWeb.UserChannel do
   end
 
   def handle_in("message:send", %{"body" => message, "to" => to_user_id}, socket) do
-    User.Message.broadcast_chat_message(to_user_id, socket.assigns.user_id, message)
-    {:noreply, socket}
+    Logger.info(inspect(message))
+
+    # TodoIstWeb.Endpoint.broadcast(
+    #   "user:#{to_user_id}",
+    #   # event name that recipient will receive
+    #   "new_message",
+    #   %{
+    #     from: socket.assigns.user_id,
+    #     body: message
+    #   }
+
+    data =
+      BroadcastUser.broadcast_user(
+        "message:recieve",
+        to_user_id,
+        socket.assigns.user_id,
+        message
+      )
+
+    Logger.info("DATA::#{inspect(data)}")
+
+    new_message = %{
+      content: message["content"],
+      receiver_id: message["receiverId"],
+      sender_id: message["senderId"],
+      type: "message"
+    }
+
+    change_set = ChatSchema.changeset(%ChatMessage{}, new_message)
+
+    case change_set do
+      %{valid?: true} ->
+        inserted = Repo.insert(change_set)
+        Logger.info("INSERTED:: #{inspect(inserted)}")
+
+        {:reply, :ok, socket}
+
+      %{valid?: false} ->
+        {:reply, :ok, socket}
+
+      _ ->
+        {:reply, :ok, socket}
+    end
   end
 
   # Handle direct server-triggered messages
@@ -43,6 +86,12 @@ defmodule TodoIstWeb.UserChannel do
     {:reply, :ok, socket}
   end
 
+  def handle_in("*", _, socket) do
+    Logger.info("GOT SOME MESSAGE>...")
+    {:reply, :ok, socket}
+  end
+
+  # Pheonix basic Needs
   def handle_info(
         %Message{topic: topic, event: "phx_leave"} = message,
         %{topic: topic, serializer: Jason, transport_pid: transport_pid} = socket
@@ -68,37 +117,4 @@ defmodule TodoIstWeb.UserChannel do
     Logger.info("User #{socket.assigns.user_id} has joined their channel.")
     {:noreply, socket}
   end
-
-  # def handle_info(:after_join, socket) do
-  #   # Presence.
-  #   {:ok, _} =
-  #     push(socket, "presence_state", Presence.list(TodoIstWeb, socket))
-
-  #   {:noreply, socket}
-  # end
-
-  # Listen for friend requests
-  # def handle_in("send_friend_request", %{"friend_id" => friend_id}, socket) do
-  #   broadcast!(socket, "new_friend_request", %{from: socket.assigns.user_id, to: friend_id})
-  #   {:noreply, socket}
-  # end
 end
-
-# defmodule TodoIstWeb.UserSocket do
-#   use Phoenix.Socket
-
-#   ## Define a channel for users
-#   channel "user:*", TodoIstWeb.UserChannel
-
-#   def connect(%{"token" => token}, socket, _connect_info) do
-#     case Guardian.decode_and_verify(token) do
-#       {:ok, claims} ->
-#         {:ok, assign(socket, :user_id, claims["sub"])}
-
-#       {:error, _reason} ->
-#         :error
-#     end
-#   end
-
-#   def id(socket), do: "user:#{socket.assigns.user_id}"
-# end

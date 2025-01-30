@@ -3,9 +3,9 @@ defmodule TodoIst.Relationship.Queries do
   This Modules handle queries for the Relationship's that are to be extracted within its context.
   """
 
-  alias TodoIst.Repo
-  import Ecto.Query
-  import Ecto.UUID
+    alias TodoIst.Repo
+    import Ecto.Query
+    import Ecto.UUID
 
   @doc """
   From represents who initialized the request

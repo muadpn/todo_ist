@@ -1,16 +1,14 @@
 defmodule TodoIstWeb.User.UsersMutationController do
   use TodoIstWeb, :controller
   import TodoIst.Authentication.AuthQuery
+  alias TodoIst.Constants.SocketEndpoints
+  alias TodoIstWeb.Broadcasts.BroadcastUser
   alias TodoIst.Relationship.Queries
-  alias TodoIstWeb.Broadcasts.User.Friends
-  alias TodoIstWeb.Endpoint
   alias Ecto.Repo
   alias TodoIst.Relationship
   alias TodoIst.Guardian
   alias TodoIst.Repo
-  import Ecto.Query
   import Ecto.UUID
-  alias TodoIst.Relationship.Mutation
 
   require Logger
 
@@ -65,11 +63,19 @@ defmodule TodoIstWeb.User.UsersMutationController do
   defp handle_friend_request(conn, [user_id, email, name], accept_friend_id) do
     case verify_and_accept_request(user_id, accept_friend_id) do
       {:ok, message} ->
-        Friends.broadcast_friend_accepted(accept_friend_id, user_id, %{
+        data = %{
           id: user_id,
           name: name,
           email: email
-        })
+        }
+
+        [:friend, :accept]
+        |> SocketEndpoints.event_path()
+        |> BroadcastUser.broadcast_user(
+          accept_friend_id,
+          user_id,
+          data
+        )
 
         send_success(conn, message)
 

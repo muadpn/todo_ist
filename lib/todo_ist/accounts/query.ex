@@ -1,5 +1,4 @@
 defmodule TodoIst.Accounts.Query do
-  alias TodoIst.Accounts.User
   alias TodoIst.Repo
   import Ecto.Query
 
