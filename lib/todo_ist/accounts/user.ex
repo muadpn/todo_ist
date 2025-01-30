@@ -10,8 +10,16 @@ defmodule TodoIst.Accounts.User do
     {:error, "Invalid id"}
   end
 
-  def get_user_by_email(email) when is_binary(email) do
+  def get_user_by_email_WITH_PASSWORD(email) when is_binary(email) do
     Repo.get_by(User, %{email: email})
+  end
+
+  def get_user_by_email(_) do
+    {:error, "Failed to retrieve"}
+  end
+
+  def get_user_by_email() do
+    {:error, "Please send in a valid email"}
   end
 
   defp user_transformer(user_data) do

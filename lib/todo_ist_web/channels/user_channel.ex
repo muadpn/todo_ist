@@ -1,4 +1,5 @@
 defmodule TodoIstWeb.UserChannel do
+  alias TodoIstWeb.Broadcasts.User
   alias TodoIstWeb.Endpoint
   alias Phoenix.Socket.Broadcast
   alias Phoenix.Socket.Message
@@ -19,15 +20,17 @@ defmodule TodoIstWeb.UserChannel do
     end
   end
 
-  # def handle_in("new_message", %{"body" => body, }, socket) do
-
-  # end
   def handle_in("send_message", %{"body" => body, "to" => to_user_id}, socket) do
     Endpoint.broadcast("user:#{to_user_id}", "new_message", %{
       from: socket.assigns.user_id,
       body: body
     })
 
+    {:noreply, socket}
+  end
+
+  def handle_in("message:send", %{"body" => message, "to" => to_user_id}, socket) do
+    User.Message.broadcast_chat_message(to_user_id, socket.assigns.user_id, message)
     {:noreply, socket}
   end
 
@@ -39,17 +42,6 @@ defmodule TodoIstWeb.UserChannel do
 
     {:reply, :ok, socket}
   end
-
-  # def handle_in("send_message", %{"body" => body, "to" => to_user_id}, socket) do
-  #   Endpoint.broadcast("user:#{to_user_id}", "new_message", %{
-  #     from: socket.assigns.user_id,
-  #     body: body
-  #   })
-
-  #   push(socket, "join", %{status: "connected"})
-  #   # Logger.info(inspect(data))
-  #   {:reply, {:ok, %{msg: body}}, assign(socket, :user, to_user_id)}
-  # end
 
   def handle_info(
         %Message{topic: topic, event: "phx_leave"} = message,

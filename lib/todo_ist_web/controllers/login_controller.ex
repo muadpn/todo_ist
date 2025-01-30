@@ -1,10 +1,11 @@
 defmodule TodoIstWeb.LoginController do
   use TodoIstWeb, :controller
   require Logger
+  alias TodoIst.Accounts
   alias TodoIst.{User, Repo, Guardian}
 
   def login(conn, %{"email" => email, "password" => password}) do
-    case Repo.get_by(User, email: email) do
+    case Accounts.User.get_user_by_email_WITH_PASSWORD(email) do
       nil ->
         send_resp(conn, 404, Jason.encode!(%{error: "Invalid credentials"}))
 

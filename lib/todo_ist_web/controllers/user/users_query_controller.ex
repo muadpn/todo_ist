@@ -1,6 +1,7 @@
 defmodule TodoIstWeb.User.UsersQueryController do
   use TodoIstWeb, :controller
   alias TodoIst.Repo
+  alias TodoIst.Accounts
   # alias TodoIst.Repo
   import Ecto.Query
   require Logger
@@ -8,7 +9,7 @@ defmodule TodoIstWeb.User.UsersQueryController do
   def users_by_email_query(conn, %{"email" => email}) when is_binary(email) do
     case Guardian.Plug.authenticated?(conn) do
       true ->
-        users = fetch_user_by_email(String.trim(email))
+        users = Accounts.Query.fetch_users_by_email(String.trim(email))
 
         conn
         |> send_resp(200, Jason.encode!(users))
@@ -19,20 +20,6 @@ defmodule TodoIstWeb.User.UsersQueryController do
       _ ->
         send_resp(conn, 500, Jason.encode!(%{error: "Server Error, Please try again."}))
     end
-  end
-
-  def fetch_user_by_email(email) do
-    query =
-      from u in "users",
-        where: ilike(u.email, ^"%#{email}%"),
-        select: %{
-          id: type(u.id, :binary_id),
-          email: u.email,
-          name: u.name,
-          inserted_at: u.inserted_at
-        }
-
-    Repo.all(query)
   end
 
   def fetch_pending_request(conn, _data) do
@@ -77,12 +64,4 @@ defmodule TodoIstWeb.User.UsersQueryController do
 
     send_resp(conn, 200, Jason.encode!(data))
   end
-
-  # @email_regex ~r/^[^\s]+@[^\s]+\.[^\s]+$/
-  # defp validateEmail?(email) when is_binary(email) do
-  #   case Regex.match?(@email_regex, email) do
-  #     true -> {:ok, email: email}
-  #     false -> {:error, message: "Invalid email"}
-  #   end
-  # end
 end

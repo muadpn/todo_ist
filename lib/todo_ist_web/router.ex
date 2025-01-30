@@ -1,5 +1,6 @@
 defmodule TodoIstWeb.Router do
   use TodoIstWeb, :router
+  alias TodoIstWeb.AuthPlug
   alias TodoIst.Authentication
   alias RouteHandlers.{AuthRouter, TodoRoute, UserRouter}
   # alias
@@ -12,7 +13,7 @@ defmodule TodoIstWeb.Router do
     plug :put_secure_browser_headers
   end
 
-  
+
   pipeline :api do
     plug :accepts, ["json"]
     plug :fetch_session
@@ -21,7 +22,7 @@ defmodule TodoIstWeb.Router do
 
   pipeline :auth do
     plug :api
-    plug Authentication.Pipeline
+    plug AuthPlug
   end
 
   scope "/", TodoIstWeb do
