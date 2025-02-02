@@ -1,5 +1,6 @@
 defmodule TodoIstWeb.User.UsersQueryController do
   use TodoIstWeb, :controller
+  alias TodoIst.Relationship
   alias TodoIst.Repo
   alias TodoIst.Accounts
   # alias TodoIst.Repo
@@ -48,20 +49,7 @@ defmodule TodoIstWeb.User.UsersQueryController do
 
   def fetch_friends(conn, _data) do
     %{"data" => %{"id" => user_id}} = Guardian.Plug.current_claims(conn)
-
-    query =
-      from r in TodoIst.Relationship,
-        join: u in TodoIst.User,
-        on: u.id == r.subject_id or u.id == r.object_id,
-        where:
-          (r.subject_id == ^user_id or r.object_id == ^user_id) and
-            r.predicate == "accepted_friend_request",
-        # Exclude self from the result
-        where: u.id != ^user_id,
-        select: %{id: u.id, name: u.name, email: u.email}
-
-    data = Repo.all(query)
-
+    data = Relationship.Queries.get_user_friends_list(user_id)
     send_resp(conn, 200, Jason.encode!(data))
   end
 end

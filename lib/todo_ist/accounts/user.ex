@@ -22,6 +22,7 @@ defmodule TodoIst.Accounts.User do
     {:error, "Please send in a valid email"}
   end
 
+
   defp user_transformer(user_data) do
     case user_data do
       nil ->
@@ -34,4 +35,5 @@ defmodule TodoIst.Accounts.User do
         {:error, "User not found, Please try again"}
     end
   end
+
 end

@@ -3,9 +3,9 @@ defmodule TodoIst.Relationship.Queries do
   This Modules handle queries for the Relationship's that are to be extracted within its context.
   """
 
-    alias TodoIst.Repo
-    import Ecto.Query
-    import Ecto.UUID
+  alias TodoIst.Repo
+  import Ecto.Query
+  import Ecto.UUID
 
   @doc """
   From represents who initialized the request
@@ -40,5 +40,24 @@ defmodule TodoIst.Relationship.Queries do
 
   def is_friend_request_present(_, _) do
     {:error, "Could'nt process because of invalid data"}
+  end
+
+  def get_user_friends_list(user_id) when is_binary(user_id) do
+    query =
+      from r in TodoIst.Relationship,
+        join: u in TodoIst.User,
+        on: u.id == r.subject_id or u.id == r.object_id,
+        where:
+          (r.subject_id == ^user_id or r.object_id == ^user_id) and
+            r.predicate == "accepted_friend_request",
+        # Exclude self from the result
+        where: u.id != ^user_id,
+        select: %{id: u.id, name: u.name, email: u.email}
+
+    Repo.all(query)
+  end
+
+  def get_user_friends_list(_) do
+    nil
   end
 end

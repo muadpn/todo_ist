@@ -20,6 +20,13 @@ defmodule TodoIstWeb.Endpoint do
     websocket: true,
     longpoll: false
 
+  # socket "/ws", TodoIstWeb.DomainCounter,
+  #   websocket: true,
+  #   longpoll: false
+
+
+    # websocket: [check_origin: ["http://localhost:5173", "https://yourdomain.com"]],
+#
   # Serve at "/" the static files from "priv/static" directory.
   #
   # You should set gzip to true if you are running phx.digest

@@ -17,7 +17,7 @@ config :todo_ist, TodoIst.Guardian,
 
 # Configures the endpoint
 config :todo_ist, TodoIstWeb.Endpoint,
-  url: [host: "localhost"],
+  url: [host: "0.0.0.0"],
   adapter: Bandit.PhoenixAdapter,
   render_errors: [
     formats: [html: TodoIstWeb.ErrorHTML, json: TodoIstWeb.ErrorJSON],

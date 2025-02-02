@@ -15,7 +15,7 @@ defmodule TodoIstWeb.Router do
   pipeline :api do
     plug :accepts, ["json"]
     plug :fetch_session
-    plug CORSPlug, origin: ["http://localhost:3000"]
+    plug CORSPlug, origin: ["http://localhost:3000", "http://192.168.1.42:3000"]
   end
 
   pipeline :auth do

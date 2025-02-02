@@ -17,6 +17,12 @@ defmodule TodoIst.Application do
       # Start a worker by calling: TodoIst.Worker.start_link(arg)
       # {TodoIst.Worker, arg},
       # Start to serve requests, typically the last entry
+
+      # for domain live tracker counter-app
+      TodoIst.Presence,
+
+      # for todo live users presence
+      TodoIstWeb.Presence,
       TodoIstWeb.Endpoint
     ]
 
