@@ -1,10 +1,71 @@
 defmodule TodoIstWeb.Todo.TodoMutationController do
   use TodoIstWeb, :controller
   require Logger
+  import Ecto.UUID
+  alias TodoIstWeb.Todo.Validate
+  alias TodoIst.Relationship
   alias TodoIst.Guardian
   alias TodoIst.Repo
   alias TodoIst.Todo
   import Ecto.Query
+
+  def add_todo(conn, %{
+        "complete_by" => date,
+        "description" => description,
+        "priority" => priority,
+        "status" => status,
+        "title" => title,
+        "assigned_user" => assigned_user
+      }) do
+    %{"data" => %{"id" => user_id}} = Guardian.Plug.current_claims(conn)
+
+    case(Relationship.Queries.verify_all_are_friends?(assigned_user, user_id)) do
+      {:ok, _} ->
+        case Validate.validate_todo_change_set(
+               title,
+               description,
+               date,
+               priority,
+               status,
+               user_id
+             ) do
+          {:ok, changeset} ->
+            Repo.transaction(fn repo ->
+              case repo.insert(changeset, returning: true) do
+                {:ok, todo} ->
+                  relation_ship_changeset =
+                    Enum.map(assigned_user, fn friend_id ->
+                      %{
+                        subject_id: cast!(friend_id),
+                        subject_table: "users",
+                        predicate: "todo_assigned",
+                        object_id: cast!(todo.id),
+                        object_table: "todos",
+                        user_id: cast!(user_id),
+                        inserted_at: DateTime.from_unix!(System.os_time(:second)),
+                        updated_at: DateTime.from_unix!(System.os_time(:second))
+                      }
+                    end)
+
+                  repo.insert_all(Relationship, relation_ship_changeset)
+              end
+            end)
+
+            send_resp(conn, 200, Jason.encode!(%{success: true}))
+
+          {:error, message} ->
+            send_error_response(message, conn)
+        end
+
+      {:error, message} ->
+        Logger.info("not ok #{inspect(message)}")
+        send_resp(conn, 404, Jason.encode!(%{success: true}))
+
+      _ ->
+        Logger.info("UNEXPECTED")
+        send_resp(conn, 404, Jason.encode!(%{success: true}))
+    end
+  end
 
   def add_todo(
         conn,
@@ -13,7 +74,8 @@ defmodule TodoIstWeb.Todo.TodoMutationController do
           "description" => description,
           "priority" => priority,
           "status" => status,
-          "title" => title
+          "title" => title,
+          "assigned_user" => assigned_user
         }
       ) do
     %{"data" => %{"id" => user_id}} = Guardian.Plug.current_claims(conn)
@@ -194,9 +256,11 @@ defmodule TodoIstWeb.Todo.TodoMutationController do
     update_params = Map.take(params, allowed_fields)
     # case
     Logger.info("COMPLETE: #{inspect(update_params["complete_by"])}")
+
     # update_params = %{update_params | "complete_by" => Date.from_iso8601!(update_params["complete_by"])}
 
     Logger.info("DATE STRING FOUND -> #{inspect(update_params)}")
+
     cond do
       map_size(update_params) == 0 ->
         {:error, "No valid update parameters provided"}
